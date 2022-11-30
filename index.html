@@ -4,23 +4,62 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/leaflet.css">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="MobileOptimized" content="176" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="./css/styles.css">
-    <script src="./js/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+          integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+          crossorigin=""/>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+            integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+            crossorigin="">
+    </script>
     <script src="./js/leaflet.js"></script>
-    <script src="./js/telegram-web-app.js"></script>
-    <title>Map</title>
+    <title></title>
+    <script>
+        function setThemeClass() {
+            document.documentElement.className = Telegram.WebApp.colorScheme;
+        }
+        Telegram.WebApp.onEvent('themeChanged', setThemeClass);
+        setThemeClass();
+
+    </script>
 </head>
 <body>
     <div id="map" class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom"></div>
-
+    <button onclick="requestLocation()"></button>
     <script>
-        const map = L.map('map').setView([23.088782133792, -82.391396257244], 15);
+        Telegram.WebApp.ready()
+        console.log(Telegram.WebApp.initData);
+        console.log(Telegram.WebApp.initDataUnsafe);
 
+        // const initData = Telegram.WebApp.initData || '';
+        // const initDataUnsafe = Telegram.WebApp.initDataUnsafe || {};
+        
+        const map = L.map('map').setView([23.088782133792, -82.391396257244], 15);
         const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // const tiles = L.tileLayer('./src_map/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
+
+
+        function requestLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+
+                    console.log('(' + position.coords.latitude + ', ' + position.coords.longitude + ')');
+                    var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
+                    map.panTo(marker.getLatLng());
+                });
+            } else {
+                document.querySelector('#locationData').innerHTML = '(Geolocation is not supported in this browser)';
+            }
+        return false;
+    }
 
     </script>
 </body>
