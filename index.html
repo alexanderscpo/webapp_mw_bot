@@ -17,7 +17,6 @@
             integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
             crossorigin="">
     </script>
-    <script src="./js/leaflet.js"></script>
     <title></title>
     <script>
         function setThemeClass() {
@@ -33,19 +32,46 @@
     <button onclick="requestLocation()"></button>
     <script>
         Telegram.WebApp.ready()
-        console.log(Telegram.WebApp.initData);
-        console.log(Telegram.WebApp.initDataUnsafe);
+        // console.log(Telegram.WebApp.initData);
+        // console.log(Telegram.WebApp.initDataUnsafe);
+        function readTextFile(file, callback) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.overrideMimeType("application/json");
+            rawFile.open("GET", file, true);
+            rawFile.onreadystatechange = function() {
+                if (rawFile.readyState === 4 && rawFile.status == "200") {
+                    callback(rawFile.responseText);
+                }
+            }
+            rawFile.send(null);
+        }
 
+
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const params = Object.fromEntries(urlSearchParams.entries());
+        console.log(params.ruta)
         // const initData = Telegram.WebApp.initData || '';
         // const initDataUnsafe = Telegram.WebApp.initDataUnsafe || {};
-        
-        const map = L.map('map').setView([23.088782133792, -82.391396257244], 15);
+
+        const map = L.map('map').setView([params.lat, params.lon], 15);
         const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         // const tiles = L.tileLayer('./src_map/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
-
+        const omnibus_icon = L.icon({
+            iconUrl: 'bus.png',
+            iconSize:     [64, 64],
+            iconAnchor:   [32, 60],
+            popupAnchor:  [-3, -76]
+        })
+        //usage:
+        console.log(`geojson/${params.ruta}-${params.estado_ruta.toUpperCase()}.json`)
+        readTextFile(`geojson/${params.ruta}-${params.estado_ruta.toUpperCase()}.json`, function(text){
+            var data = JSON.parse(text);
+            L.geoJSON(data).addTo(map)
+        });
+        var mark = L.marker([params.lat, params.lon], {icon: omnibus_icon}).addTo(map)
 
         function requestLocation() {
             if (navigator.geolocation) {
@@ -53,7 +79,7 @@
 
                     console.log('(' + position.coords.latitude + ', ' + position.coords.longitude + ')');
                     var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
-                    map.panTo(marker.getLatLng());
+                    map.flyTo(marker.getLatLng());
                 });
             } else {
                 document.querySelector('#locationData').innerHTML = '(Geolocation is not supported in this browser)';
